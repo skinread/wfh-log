@@ -1,0 +1,2 @@
+[functions.claim-entries]
+verify_jwt = true

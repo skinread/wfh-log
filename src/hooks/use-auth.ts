@@ -17,6 +17,7 @@ export function useAuth(): AuthState {
 
   useEffect(() => {
     let mounted = true;
+    let claimed = false;
 
     (async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -33,7 +34,7 @@ export function useAuth(): AuthState {
     })();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         (async () => {
           if (!mounted) return;
           setState({
@@ -41,6 +42,10 @@ export function useAuth(): AuthState {
             user: session?.user ?? null,
             loading: false,
           });
+          if (event === "SIGNED_IN" && !claimed && session) {
+            claimed = true;
+            await claimOrphanedEntries();
+          }
         })();
       },
     );
@@ -60,6 +65,19 @@ export async function signUp(
 ): Promise<{ error: string | null }> {
   const { error } = await supabase.auth.signUp({ email, password });
   return { error: error?.message ?? null };
+}
+
+async function claimOrphanedEntries(): Promise<void> {
+  try {
+    const { data } = await supabase.functions.invoke("claim-entries", {
+      method: "POST",
+    });
+    if (data && typeof data.claimed === "number" && data.claimed > 0) {
+      void data;
+    }
+  } catch {
+    // Non-fatal: entries can be claimed manually later
+  }
 }
 
 export async function signIn(
