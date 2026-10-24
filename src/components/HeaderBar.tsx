@@ -1,4 +1,4 @@
-import { FileDown, FileUp, Monitor, Sun, Moon } from 'lucide-react';
+import { FileDown, FileUp, Monitor, Sun, Moon, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -22,6 +22,7 @@ interface HeaderBarProps {
   onThemeChange: (t: 'auto' | 'light' | 'dark') => void;
   onImport: () => void;
   onExport: () => void;
+  onSignOut: () => Promise<void>;
 }
 
 export function HeaderBar({
@@ -31,10 +32,19 @@ export function HeaderBar({
   onThemeChange,
   onImport,
   onExport,
+  onSignOut,
 }: HeaderBarProps) {
   const subtitle = entry
     ? `${formatDuration(workedMinutes(entry))} worked from home`
     : 'Not logged';
+
+  async function handleSignOut() {
+    try {
+      await onSignOut();
+    } catch {
+      // session state change handles UI swap
+    }
+  }
 
   return (
     <div className="flex items-start justify-between gap-4 px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
@@ -106,6 +116,20 @@ export function HeaderBar({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSignOut}
+              aria-label="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Sign out</TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );

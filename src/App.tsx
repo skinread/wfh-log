@@ -19,11 +19,44 @@ import { useEntries } from '@/hooks/use-entries';
 import { useSelectedDate } from '@/hooks/use-selected-date';
 import { useTheme } from '@/hooks/use-theme';
 import { useTodayKey } from '@/lib/use-today';
-import { useAuth, signIn as authSignIn, signUp as authSignUp } from '@/hooks/use-auth';
+import {
+  useAuth,
+  signIn as authSignIn,
+  signUp as authSignUp,
+  signOut as authSignOut,
+} from '@/hooks/use-auth';
 import { parseEntriesCsv, CSV_ACCEPT } from '@/lib/csv';
 import { toast } from 'sonner';
 
 export default function App() {
+  const { session, loading: authLoading } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-accent-blue" />
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <TooltipProvider delayDuration={300}>
+        <AuthScreen onSignIn={authSignIn} onSignUp={authSignUp} />
+        <Toaster richColors position="bottom-right" />
+      </TooltipProvider>
+    );
+  }
+
+  return (
+    <TooltipProvider delayDuration={300}>
+      <SignedInApp onSignOut={authSignOut} />
+      <Toaster richColors position="bottom-right" />
+    </TooltipProvider>
+  );
+}
+
+function SignedInApp({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const today = useTodayKey();
   const { selectedDate, setSelectedDate } = useSelectedDate(today);
   const { entries, loading, error, save, remove, importEntries } = useEntries();
@@ -76,96 +109,93 @@ export default function App() {
   }, [entries.length]);
 
   return (
-    <TooltipProvider delayDuration={300}>
-      <div className="flex h-screen overflow-hidden bg-background text-foreground">
-        {/* Desktop sidebar */}
-        <aside className="hidden md:flex w-[280px] shrink-0 border-r bg-background overflow-y-auto">
+    <div className="flex h-screen overflow-hidden bg-background text-foreground">
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-[280px] shrink-0 border-r bg-background overflow-y-auto">
+        <Sidebar
+          selectedDate={selectedDate}
+          today={today}
+          entries={entries}
+          onSelectDate={setSelectedDate}
+        />
+      </aside>
+
+      {/* Mobile sidebar toggle */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="md:hidden fixed top-3 left-3 z-20"
+        onClick={() => setMobileSidebarOpen(true)}
+        aria-label="Open calendar"
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
+
+      {/* Mobile sidebar drawer */}
+      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+        <SheetContent side="left" className="w-[280px] p-0 overflow-y-auto">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Calendar & Summary</SheetTitle>
+          </SheetHeader>
           <Sidebar
             selectedDate={selectedDate}
             today={today}
             entries={entries}
-            onSelectDate={setSelectedDate}
+            onSelectDate={(d) => {
+              setSelectedDate(d);
+              setMobileSidebarOpen(false);
+            }}
           />
-        </aside>
+        </SheetContent>
+      </Sheet>
 
-        {/* Mobile sidebar toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden fixed top-3 left-3 z-20"
-          onClick={() => setMobileSidebarOpen(true)}
-          aria-label="Open calendar"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-
-        {/* Mobile sidebar drawer */}
-        <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-          <SheetContent side="left" className="w-[280px] p-0 overflow-y-auto">
-            <SheetHeader className="sr-only">
-              <SheetTitle>Calendar & Summary</SheetTitle>
-            </SheetHeader>
-            <Sidebar
-              selectedDate={selectedDate}
-              today={today}
-              entries={entries}
-              onSelectDate={(d) => {
-                setSelectedDate(d);
-                setMobileSidebarOpen(false);
-              }}
-            />
-          </SheetContent>
-        </Sheet>
-
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto">
-          <HeaderBar
-            selectedDate={selectedDate}
-            entry={entry}
-            theme={theme}
-            onThemeChange={setTheme}
-            onImport={handleImport}
-            onExport={handleExport}
-          />
-
-          <EntryPanel
-            selectedDate={selectedDate}
-            entry={entry}
-            entries={entries}
-            loading={loading}
-            loadError={error}
-            onSave={save}
-            onDelete={remove}
-          />
-
-          <div className="border-t" />
-
-          <MonthTable
-            selectedDate={selectedDate}
-            entries={entries}
-            onSelectDate={setSelectedDate}
-          />
-        </main>
-
-        {/* Export dialog */}
-        <ExportDialog
-          open={exportOpen}
-          onOpenChange={setExportOpen}
-          entries={entries}
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto">
+        <HeaderBar
           selectedDate={selectedDate}
+          entry={entry}
+          theme={theme}
+          onThemeChange={setTheme}
+          onImport={handleImport}
+          onExport={handleExport}
+          onSignOut={onSignOut}
         />
 
-        {/* Hidden file input for import */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={CSV_ACCEPT}
-          className="hidden"
-          onChange={handleFileChange}
+        <EntryPanel
+          selectedDate={selectedDate}
+          entry={entry}
+          entries={entries}
+          loading={loading}
+          loadError={error}
+          onSave={save}
+          onDelete={remove}
         />
 
-        <Toaster richColors position="bottom-right" />
-      </div>
-    </TooltipProvider>
+        <div className="border-t" />
+
+        <MonthTable
+          selectedDate={selectedDate}
+          entries={entries}
+          onSelectDate={setSelectedDate}
+        />
+      </main>
+
+      {/* Export dialog */}
+      <ExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        entries={entries}
+        selectedDate={selectedDate}
+      />
+
+      {/* Hidden file input for import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={CSV_ACCEPT}
+        className="hidden"
+        onChange={handleFileChange}
+      />
+    </div>
   );
 }
