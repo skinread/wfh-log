@@ -191,7 +191,7 @@ export async function createSupabaseRepository(): Promise<EntriesRepository> {
 
       const { error } = await supabase
         .from('work_entries')
-        .upsert(rows, { onConflict: 'date' });
+        .upsert(rows);
 
       if (error) throw new Error(error.message);
 

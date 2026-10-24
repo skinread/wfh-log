@@ -14,10 +14,12 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { EntryPanel } from '@/components/EntryPanel';
 import { MonthTable } from '@/components/MonthTable';
 import { ExportDialog } from '@/components/ExportDialog';
+import { AuthScreen } from '@/components/AuthScreen';
 import { useEntries } from '@/hooks/use-entries';
 import { useSelectedDate } from '@/hooks/use-selected-date';
 import { useTheme } from '@/hooks/use-theme';
 import { useTodayKey } from '@/lib/use-today';
+import { useAuth, signIn as authSignIn, signUp as authSignUp } from '@/hooks/use-auth';
 import { parseEntriesCsv, CSV_ACCEPT } from '@/lib/csv';
 import { toast } from 'sonner';
 

@@ -6,6 +6,7 @@ export interface Database {
       work_entries: {
         Row: {
           date: string;
+          user_id: string;
           start: string;
           finish: string;
           break_minutes: number;
@@ -15,6 +16,7 @@ export interface Database {
         };
         Insert: {
           date: string;
+          user_id?: string;
           start: string;
           finish: string;
           break_minutes?: number;
@@ -24,6 +26,7 @@ export interface Database {
         };
         Update: {
           date?: string;
+          user_id?: string;
           start?: string;
           finish?: string;
           break_minutes?: number;
