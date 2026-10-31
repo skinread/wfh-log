@@ -1,12 +1,19 @@
 {
   "version": 1,
   "source": {
-    "name": "wfh-log"
+    "name": "wfh-log",
+    "compatibility_date": "2026-02-24",
+    "routes": [
+      {
+        "pattern": "wfh-log.kinread.com",
+        "custom_domain": true
+      }
+    ]
   },
   "resolved": {
+    "name": "wfh-log",
     "compatibility_date": "2026-02-24",
     "account_id": "4d6b3f8cce83e49e7017e06464ee7224",
-    "name": "wfh-log",
     "d1_databases": [
       {
         "binding": "DB",
@@ -14,7 +21,13 @@
         "database_id": "bdd201d7-3d9b-4485-96b4-8028872198a7",
         "migrations_dir": "./db/migrations"
       }
+    ],
+    "routes": [
+      {
+        "pattern": "wfh-log.kinread.com",
+        "custom_domain": true
+      }
     ]
   },
-  "text": "{\n  \"compatibility_date\": \"2026-02-24\",\n  \"account_id\": \"4d6b3f8cce83e49e7017e06464ee7224\",\n  \"name\": \"wfh-log\",\n  \"d1_databases\": [\n    {\n      \"binding\": \"DB\",\n      \"database_name\": \"wfh-log-db\",\n      \"database_id\": \"bdd201d7-3d9b-4485-96b4-8028872198a7\",\n      \"migrations_dir\": \"./db/migrations\"\n    }\n  ]\n}\n"
+  "text": "{\n  \"name\": \"wfh-log\",\n  \"compatibility_date\": \"2026-02-24\",\n  \"account_id\": \"4d6b3f8cce83e49e7017e06464ee7224\",\n  \"d1_databases\": [\n    {\n      \"binding\": \"DB\",\n      \"database_name\": \"wfh-log-db\",\n      \"database_id\": \"bdd201d7-3d9b-4485-96b4-8028872198a7\",\n      \"migrations_dir\": \"./db/migrations\"\n    }\n  ],\n  \"routes\": [\n    {\n      \"pattern\": \"wfh-log.kinread.com\",\n      \"custom_domain\": true\n    }\n  ]\n}\n"
 }

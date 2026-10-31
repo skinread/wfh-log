@@ -31,5 +31,5 @@
       "void/routes": ["./.void/routes.d.ts"]
     }
   },
-  "include": ["src", "routes", "db", "auth.ts", "env.ts", "void.config.ts"]
+  "include": ["src", "routes", "db", "auth.ts", "env.ts", "void.config.ts", "deploy-target.ts"]
 }
