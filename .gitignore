@@ -28,3 +28,6 @@ dist-ssr
 .void
 *.tsbuildinfo
 .void-wrangler.jsonc
+.wrangler
+.env.*
+!.env.example
