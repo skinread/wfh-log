@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Clock, Github } from 'lucide-react';
+import { GitHubLogoIcon } from '@radix-ui/react-icons';
+import { Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface AuthScreenProps {
@@ -66,7 +67,8 @@ export function AuthScreen({ onSignIn }: AuthScreenProps) {
           disabled={submitting}
           className="w-full bg-accent-blue hover:bg-accent-blue/90 text-white"
         >
-          <Github className="h-4 w-4" />
+          {/* lucide-react 1.x dropped brand icons */}
+          <GitHubLogoIcon className="h-4 w-4" />
           {submitting ? 'Redirecting to GitHub…' : 'Sign in with GitHub'}
         </Button>
       </div>
