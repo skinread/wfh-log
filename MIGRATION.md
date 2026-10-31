@@ -20,15 +20,31 @@ Use a GitHub OAuth app with callback `http://localhost:5173/api/auth/callback/gi
 
 The Worker is named `wfh-log` (`cloudflare.name` in `void.config.ts`), so it is served at `https://wfh-log.<your-subdomain>.workers.dev`.
 
-1. Create a GitHub OAuth app for production with homepage `https://wfh-log.<your-subdomain>.workers.dev` and callback `https://wfh-log.<your-subdomain>.workers.dev/api/auth/callback/github`.
-2. Set the production secrets. Deploy refuses to run until they exist; on a first deploy they go onto a draft Worker:
+1. Find your workers.dev subdomain: Cloudflare dashboard → Workers & Pages → the "Subdomain" shown in the account details panel (for example `skinread` in `skinread.workers.dev`).
+2. Create a GitHub OAuth app for production: GitHub → Settings → Developer settings → OAuth Apps → New OAuth App.
+   - Application name: `Work Hours`
+   - Homepage URL: `https://wfh-log.<your-subdomain>.workers.dev`
+   - Authorization callback URL: `https://wfh-log.<your-subdomain>.workers.dev/api/auth/callback/github`
+   - Leave "Enable Device Flow" off, then Register application.
+
+   Keep this app separate from the local one: a GitHub OAuth app has a single callback URL.
+3. Set the production secrets. Deploy refuses to run until they exist; on a first deploy they go onto a draft Worker. Each command prompts for the value:
+
+   | Secret | Value |
+   |---|---|
+   | `AUTH_GITHUB_CLIENT_ID` | The app's "Client ID" on its GitHub settings page (starts `Ov23…`). Not secret, but stored the same way. |
+   | `AUTH_GITHUB_CLIENT_SECRET` | Click "Generate a new client secret" on the same page and copy it straight away; GitHub shows it only once. |
+   | `AUTH_ALLOWED_GITHUB_USERS` | Who may sign in: comma-separated GitHub usernames or numeric IDs, e.g. `skinread` or `583231,octocat`. Get your ID with `gh api user --jq .id`; an ID keeps working if the username changes. |
+
    ```sh
    npx void secret put AUTH_GITHUB_CLIENT_ID
    npx void secret put AUTH_GITHUB_CLIENT_SECRET
    npx void secret put AUTH_ALLOWED_GITHUB_USERS
    ```
+
+   To change who has access later, run `npx void secret put AUTH_ALLOWED_GITHUB_USERS` again; it applies from their next sign-in.
    `BETTER_AUTH_SECRET` is created by Void on the first deploy, so the build's "Missing required secrets: BETTER_AUTH_SECRET" warning can be ignored.
-3. `npx void deploy` from your machine. `void init` saved Cloudflare as the target (account in `void.lock.json`). The first deploy provisions D1 and applies `db/migrations/`; commit the `void.lock.json` changes it makes before CI deploys.
+4. `npx void deploy` from your machine. `void init` saved Cloudflare as the target (account in `void.lock.json`). The first deploy provisions D1 and applies `db/migrations/`; commit the `void.lock.json` changes it makes before CI deploys.
 
 ## Deploying from CI
 
