@@ -112,7 +112,7 @@ export function MonthCalendar({
               aria-pressed={isSelected}
               className={cn(
                 'relative flex flex-col items-center justify-center w-full rounded-md py-1.5 text-sm transition-colors',
-                'hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                'hover:bg-accent focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring',
                 !cell.inMonth && !isSelected && 'text-muted-foreground/40',
                 isToday && !isSelected && 'font-semibold text-accent-blue',
                 isSelected &&

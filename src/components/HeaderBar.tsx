@@ -47,7 +47,7 @@ export function HeaderBar({
   }
 
   return (
-    <div className="flex items-start justify-between gap-4 px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+    <div className="flex items-start justify-between gap-4 px-6 py-4 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 sticky top-0 z-10">
       <div className="min-w-0">
         <h1 className="text-xl font-semibold tracking-tight truncate">
           {formatLongDate(selectedDate)}
