@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "void": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["mcp/void-server.mjs"]
+    },
+    "cloudflare-docs": {
+      "type": "http",
+      "url": "https://docs.mcp.cloudflare.com/mcp"
+    },
+    "cloudflare-bindings": {
+      "type": "http",
+      "url": "https://bindings.mcp.cloudflare.com/mcp"
+    },
+    "cloudflare-observability": {
+      "type": "http",
+      "url": "https://observability.mcp.cloudflare.com/mcp"
+    },
+    "cloudflare-builds": {
+      "type": "http",
+      "url": "https://builds.mcp.cloudflare.com/mcp"
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headersHelper": "printf '{\"Authorization\":\"Bearer %s\"}' \"$(gh auth token)\""
+    }
+  }
+}
