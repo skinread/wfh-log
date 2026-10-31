@@ -8,7 +8,7 @@ async function call<T>(run: () => Promise<T>): Promise<T> {
   } catch (e) {
     if (e instanceof FetchError) {
       const message = (e.data as { error?: unknown } | undefined)?.error;
-      throw new Error(typeof message === 'string' ? message : `Request failed (${e.status})`);
+      throw new Error(typeof message === 'string' ? message : `Request failed (${e.status})`, { cause: e });
     }
     throw e;
   }
