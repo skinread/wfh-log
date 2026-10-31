@@ -150,19 +150,19 @@ export function ExportDialog({
           >
             <ToggleGroupItem
               value="month"
-              className="flex-1 data-[state=on]:bg-background data-[state=on]:shadow-sm rounded-sm text-sm"
+              className="flex-1 data-[state=on]:bg-background data-[state=on]:shadow-xs rounded-sm text-sm"
             >
               Month
             </ToggleGroupItem>
             <ToggleGroupItem
               value="fy"
-              className="flex-1 data-[state=on]:bg-background data-[state=on]:shadow-sm rounded-sm text-sm"
+              className="flex-1 data-[state=on]:bg-background data-[state=on]:shadow-xs rounded-sm text-sm"
             >
               Financial year
             </ToggleGroupItem>
             <ToggleGroupItem
               value="all"
-              className="flex-1 data-[state=on]:bg-background data-[state=on]:shadow-sm rounded-sm text-sm"
+              className="flex-1 data-[state=on]:bg-background data-[state=on]:shadow-xs rounded-sm text-sm"
             >
               All time
             </ToggleGroupItem>
