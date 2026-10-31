@@ -29,7 +29,17 @@ Use a GitHub OAuth app with callback `http://localhost:5173/api/auth/callback/gi
 
 ## Deploying from CI
 
-`.github/workflows/void-deploy.yml` (from `void init --github`) runs `npx void deploy --platform cloudflare` on every push to `main`. It needs a `CLOUDFLARE_API_TOKEN` repository secret with Workers Scripts: Edit and D1: Edit on the account.
+`.github/workflows/void-deploy.yml` (from `void init --github`) runs `npx void deploy --platform cloudflare` on every push to `main`. It needs a `CLOUDFLARE_API_TOKEN` repository secret (Settings → Secrets and variables → Actions). Do the first deploy from your machine before pushing to `main`, so CI deploys to the D1 database recorded in `void.lock.json`.
+
+Create the token in Cloudflare under My Profile → API Tokens → Create Custom Token. None of the templates fit: "Edit Cloudflare Workers" lacks D1 and grants more than the app uses. The app is one Worker with static assets and one D1 database on workers.dev, so it needs:
+
+| Scope | Permission | Access | Used for |
+|---|---|---|---|
+| Account | Workers Scripts | Edit | Uploading the Worker, secrets, versions and readiness checks |
+| Account | D1 | Edit | Applying `db/migrations/` and the restore point Void saves before migrating |
+| Account | Account Settings | Read | Account lookups during deploy |
+
+Set Account Resources to Include → the account in `void.lock.json`, so `CLOUDFLARE_ACCOUNT_ID` isn't needed. Leave Zone Resources empty; a custom domain later also needs Zone → Workers Routes: Edit for that zone. If a CI deploy fails on permissions, add only the permission the error names.
 
 Disconnect the Cloudflare dashboard's Workers Builds integration for `wfh-log` (Worker → Settings → Builds) so the two don't both deploy. Its PR check can be ignored once it's disconnected.
 
