@@ -18,14 +18,17 @@ Use a GitHub OAuth app with callback `http://localhost:5173/api/auth/callback/gi
 
 ## First deploy
 
-1. Create a GitHub OAuth app for production with callback `https://<your-domain>/api/auth/callback/github`.
-2. Set the production secrets:
+The Worker is named `wfh-log` (`cloudflare.name` in `void.config.ts`), so it is served at `https://wfh-log.<your-subdomain>.workers.dev`.
+
+1. Create a GitHub OAuth app for production with homepage `https://wfh-log.<your-subdomain>.workers.dev` and callback `https://wfh-log.<your-subdomain>.workers.dev/api/auth/callback/github`.
+2. Set the production secrets. Deploy refuses to run until they exist; on a first deploy they go onto a draft Worker:
    ```sh
    npx void secret put AUTH_GITHUB_CLIENT_ID
    npx void secret put AUTH_GITHUB_CLIENT_SECRET
    npx void secret put AUTH_ALLOWED_GITHUB_USERS
    ```
-3. `npx void deploy` from your machine. `void init` saved Cloudflare as the target (account in `void.lock.json`). The first deploy provisions D1 and applies `db/migrations/`; commit any `void.lock.json` changes it makes before CI deploys.
+   `BETTER_AUTH_SECRET` is created by Void on the first deploy, so the build's "Missing required secrets: BETTER_AUTH_SECRET" warning can be ignored.
+3. `npx void deploy` from your machine. `void init` saved Cloudflare as the target (account in `void.lock.json`). The first deploy provisions D1 and applies `db/migrations/`; commit the `void.lock.json` changes it makes before CI deploys.
 
 ## Deploying from CI
 

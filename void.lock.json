@@ -1,9 +1,12 @@
 {
   "version": 1,
-  "source": {},
+  "source": {
+    "name": "wfh-log"
+  },
   "resolved": {
     "compatibility_date": "2026-02-24",
-    "account_id": "4d6b3f8cce83e49e7017e06464ee7224"
+    "account_id": "4d6b3f8cce83e49e7017e06464ee7224",
+    "name": "wfh-log"
   },
-  "text": "{\n  \"compatibility_date\": \"2026-02-24\",\n  \"account_id\": \"4d6b3f8cce83e49e7017e06464ee7224\"\n}\n"
+  "text": "{\n  \"compatibility_date\": \"2026-02-24\",\n  \"account_id\": \"4d6b3f8cce83e49e7017e06464ee7224\",\n  \"name\": \"wfh-log\"\n}\n"
 }
