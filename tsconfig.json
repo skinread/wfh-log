@@ -23,7 +23,6 @@
     "noFallthroughCasesInSwitch": true,
 
     /* shadcn alias, plus the paths from .void/tsconfig.json (paths don't merge through extends) */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "@schema": ["./db/schema.ts"],
