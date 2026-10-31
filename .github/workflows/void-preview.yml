@@ -1,0 +1,76 @@
+name: PR preview
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: write
+
+env:
+  # void.config.ts turns this into the wfh-log-pr-<n> Worker on pr-<n>.wfh-log.kinread.com.
+  WFH_LOG_PREVIEW: pr-${{ github.event.pull_request.number }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: 4d6b3f8cce83e49e7017e06464ee7224
+
+jobs:
+  deploy:
+    # Fork and Dependabot PRs don't get repository secrets.
+    if: >-
+      github.event.action != 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    environment:
+      name: preview
+      url: https://pr-${{ github.event.pull_request.number }}.wfh-log.kinread.com
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - name: Target the preview Worker
+        # void.lock.json pins production's Worker and D1 database, so previews start without it
+        # and Void creates or reuses wfh-log-pr-<n>-db by name.
+        run: |
+          rm void.lock.json
+          mkdir -p .void
+          echo '{ "platform": "cloudflare" }' > .void/project.json
+      - name: Set preview secrets
+        env:
+          AUTH_GITHUB_CLIENT_ID: ${{ secrets.AUTH_GITHUB_CLIENT_ID }}
+          AUTH_GITHUB_CLIENT_SECRET: ${{ secrets.AUTH_GITHUB_CLIENT_SECRET }}
+          AUTH_ALLOWED_GITHUB_USERS: ${{ secrets.AUTH_ALLOWED_GITHUB_USERS }}
+          AUTH_OAUTH_PROXY_SECRET: ${{ secrets.AUTH_OAUTH_PROXY_SECRET }}
+        run: |
+          for name in AUTH_GITHUB_CLIENT_ID AUTH_GITHUB_CLIENT_SECRET AUTH_ALLOWED_GITHUB_USERS AUTH_OAUTH_PROXY_SECRET; do
+            printf '%s' "${!name}" | npx void secret put "$name"
+          done
+      - name: Deploy
+        run: npx void deploy --platform cloudflare
+
+  cleanup:
+    if: >-
+      github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - name: Delete the preview Worker and database
+        run: |
+          npx wrangler delete "wfh-log-$WFH_LOG_PREVIEW" --force \
+            || echo "::warning::Worker wfh-log-$WFH_LOG_PREVIEW was not deleted (it may never have deployed)."
+          npx wrangler d1 delete "wfh-log-$WFH_LOG_PREVIEW-db" -y \
+            || echo "::warning::D1 database wfh-log-$WFH_LOG_PREVIEW-db was not deleted (it may never have been created)."
