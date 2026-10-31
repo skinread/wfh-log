@@ -19,17 +19,12 @@ import { useEntries } from '@/hooks/use-entries';
 import { useSelectedDate } from '@/hooks/use-selected-date';
 import { useTheme } from '@/hooks/use-theme';
 import { useTodayKey } from '@/lib/use-today';
-import {
-  useAuth,
-  signIn as authSignIn,
-  signUp as authSignUp,
-  signOut as authSignOut,
-} from '@/hooks/use-auth';
+import { useAuth, signInWithGithub, signOut as authSignOut } from '@/hooks/use-auth';
 import { parseEntriesCsv, CSV_ACCEPT } from '@/lib/csv';
 import { toast } from 'sonner';
 
 export default function App() {
-  const { session, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   if (authLoading) {
     return (
@@ -39,10 +34,10 @@ export default function App() {
     );
   }
 
-  if (!session) {
+  if (!user) {
     return (
       <TooltipProvider delayDuration={300}>
-        <AuthScreen onSignIn={authSignIn} onSignUp={authSignUp} />
+        <AuthScreen onSignIn={signInWithGithub} />
         <Toaster richColors position="bottom-right" />
       </TooltipProvider>
     );

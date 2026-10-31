@@ -1,45 +1,46 @@
-import { useState } from 'react';
-import { Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Clock, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
-
-type Mode = 'signin' | 'signup';
 
 interface AuthScreenProps {
-  onSignIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  onSignUp: (email: string, password: string) => Promise<{ error: string | null }>;
+  onSignIn: () => Promise<void>;
 }
 
-export function AuthScreen({ onSignIn, onSignUp }: AuthScreenProps) {
-  const [mode, setMode] = useState<Mode>('signin');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+/** Reads an OAuth error that Better Auth appended to the URL. */
+function readAuthError(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('error');
+  if (!code) return null;
+  if (code === 'not_allowed') return 'This GitHub account is not allowed to use Work Hours.';
+  return params.get('error_description') || `Sign-in failed (${code.replace(/_/g, ' ')}).`;
+}
+
+// Read once at page load: the screen can remount while the session loads, after the URL is cleaned.
+const initialAuthError = readAuthError();
+
+export function AuthScreen({ onSignIn }: AuthScreenProps) {
+  const [error, setError] = useState<string | null>(initialAuthError);
   const [submitting, setSubmitting] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  // Drop the error from the URL once shown, so a reload doesn't repeat it.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('error')) return;
+    url.searchParams.delete('error');
+    url.searchParams.delete('error_description');
+    window.history.replaceState(null, '', url);
+  }, []);
+
+  async function handleSignIn() {
     if (submitting) return;
     setError(null);
     setSubmitting(true);
-
-    const result =
-      mode === 'signin'
-        ? await onSignIn(email.trim(), password)
-        : await onSignUp(email.trim(), password);
-
-    setSubmitting(false);
-
-    if (result.error) {
-      setError(result.error);
+    try {
+      await onSignIn();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setSubmitting(false);
     }
-  }
-
-  function switchMode(next: Mode) {
-    setMode(next);
-    setError(null);
   }
 
   return (
@@ -50,91 +51,24 @@ export function AuthScreen({ onSignIn, onSignUp }: AuthScreenProps) {
             <Clock className="h-7 w-7" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">Work Hours</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {mode === 'signin'
-              ? 'Sign in to view your work log'
-              : 'Create an account to start logging'}
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">Sign in to view your work log</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={submitting}
-              placeholder="you@example.com"
-            />
-          </div>
+        {error && (
+          <p className="text-sm text-destructive text-center mb-4" role="alert">
+            {error}
+          </p>
+        )}
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={submitting}
-              minLength={6}
-              placeholder="At least 6 characters"
-            />
-          </div>
-
-          {error && (
-            <p className="text-sm text-destructive" role="alert">
-              {error}
-            </p>
-          )}
-
-          <Button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-accent-blue hover:bg-accent-blue/90 text-white"
-          >
-            {submitting
-              ? 'Please wait…'
-              : mode === 'signin'
-                ? 'Sign in'
-                : 'Create account'}
-          </Button>
-        </form>
-
-        <p className="text-sm text-center text-muted-foreground mt-6">
-          {mode === 'signin' ? (
-            <>
-              Don't have an account?{' '}
-              <button
-                type="button"
-                onClick={() => switchMode('signup')}
-                className={cn(
-                  'font-medium text-foreground underline-offset-4 hover:underline',
-                )}
-              >
-                Sign up
-              </button>
-            </>
-          ) : (
-            <>
-              Already have an account?{' '}
-              <button
-                type="button"
-                onClick={() => switchMode('signin')}
-                className={cn(
-                  'font-medium text-foreground underline-offset-4 hover:underline',
-                )}
-              >
-                Sign in
-              </button>
-            </>
-          )}
-        </p>
+        <Button
+          type="button"
+          onClick={handleSignIn}
+          disabled={submitting}
+          className="w-full bg-accent-blue hover:bg-accent-blue/90 text-white"
+        >
+          <Github className="h-4 w-4" />
+          {submitting ? 'Redirecting to GitHub…' : 'Sign in with GitHub'}
+        </Button>
       </div>
     </div>
   );
